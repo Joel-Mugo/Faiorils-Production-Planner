@@ -1,4 +1,3 @@
-// README.md
 # Fairoils Manufacturing Business Intelligence Platform
 
 A comprehensive production planning, capacity management, and purchase order tracking system designed for oil manufacturing operations.
