@@ -1,4 +1,3 @@
-// pages/data-entry.js
 import React, { useState } from 'react';
 import { Plus, Save, Calendar, Factory, Package, Zap, Clock } from 'lucide-react';
 import { addProductionData, addPurchaseOrder, getFactories, getWeekDates, getQuarter } from '../utils/dataStore';
