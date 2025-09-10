@@ -1,5 +1,5 @@
 // utils/dataStore.js
-// Simple in-memory data store (in production, this would be replaced with a database)
+// Simple in-memory data store (in production, this will be replaced with a database)
 let productionData = [];
 let purchaseOrders = [];
 let factories = [
