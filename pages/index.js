@@ -1,4 +1,3 @@
-// pages/index.js
 import React, { useState, useMemo, useEffect } from 'react';
 import { Calendar, Factory, Droplets, TrendingUp, AlertCircle, CheckCircle, Clock, Zap } from 'lucide-react';
 import { getProductionData, getFactories, getCurrentWeek } from '../utils/dataStore';
