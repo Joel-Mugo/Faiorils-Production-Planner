@@ -2,7 +2,7 @@
 {
   "name": "fairoils-production-planner",
   "version": "1.0.0",
-  "description": "Comprehensive production and Manufacturing Business Intelligence Platform",
+  "description": "A Comprehensive Manufacturing planning & scheduling Business Intelligence Platform",
   "main": "index.js",
   "scripts": {
     "dev": "next dev",
