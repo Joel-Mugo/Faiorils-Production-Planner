@@ -1,386 +1,133 @@
-import React, { useState, useEffect, useMemo } from "react";
-import {
-  Truck,
-  Package,
-  Calendar,
-  User,
-  Plus,
-  Save,
-  Search,
-  Filter,
-} from "lucide-react";
-import { getPurchaseOrders, addPurchaseOrder } from "../utils/dataStore";
+import React, { useState, useEffect } from "react";
+import { Truck, ClipboardList, CheckCircle, Clock } from "lucide-react";
+import { getPOData, addPOData } from "../utils/dataStore";
 
 export default function POTracking() {
-  const [purchaseOrders, setPurchaseOrders] = useState([]);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [filterQuarter, setFilterQuarter] = useState("all");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("dispatchDate");
-
-  const [poForm, setPoForm] = useState({
-    clientName: "",
+  const [poData, setPOData] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
     poNumber: "",
-    products: "",
+    supplier: "",
+    material: "",
     quantity: "",
-    dispatchDate: "",
+    eta: "",
+    status: "Pending",
   });
 
   useEffect(() => {
-    setPurchaseOrders(getPurchaseOrders());
+    setPOData(getPOData());
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    const dispatchDate = new Date(poForm.dispatchDate);
-    const dispatchWeek = Math.ceil(dispatchDate.getDate() / 7);
-    const dispatchMonth = dispatchDate.getMonth() + 1;
-    const dispatchQuarter = Math.ceil(dispatchMonth / 3);
-
-    const newPO = {
-      ...poForm,
-      dispatchWeek,
-      dispatchMonth,
-      dispatchQuarter,
-      dispatchYear: dispatchDate.getFullYear(),
-      timestamp: new Date().toISOString(),
-    };
-
-    addPurchaseOrder(newPO);
-    setPurchaseOrders(getPurchaseOrders());
-
-    setPoForm({
-      clientName: "",
-      poNumber: "",
-      products: "",
-      quantity: "",
-      dispatchDate: "",
-    });
-    setShowAddForm(false);
-  };
-
-  const filteredAndSortedPOs = useMemo(() => {
-    let filtered = purchaseOrders;
-
-    if (filterQuarter !== "all") {
-      filtered = filtered.filter(
-        (po) => po.dispatchQuarter === parseInt(filterQuarter)
-      );
-    }
-
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (po) =>
-          po.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          po.poNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          po.products.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    filtered.sort((a, b) => {
-      if (sortBy === "dispatchDate") {
-        return new Date(a.dispatchDate) - new Date(b.dispatchDate);
-      }
-      if (sortBy === "quantity") {
-        return parseFloat(b.quantity) - parseFloat(a.quantity);
-      }
-      if (sortBy === "client") {
-        return a.clientName.localeCompare(b.clientName);
-      }
-      return 0;
-    });
-
-    return filtered;
-  }, [purchaseOrders, filterQuarter, searchTerm, sortBy]);
-
-  const quarterStats = useMemo(() => {
-    const stats = {
-      1: { count: 0, volume: 0 },
-      2: { count: 0, volume: 0 },
-      3: { count: 0, volume: 0 },
-      4: { count: 0, volume: 0 },
-    };
-
-    purchaseOrders.forEach((po) => {
-      stats[po.dispatchQuarter].count += 1;
-      stats[po.dispatchQuarter].volume += parseFloat(po.quantity);
-    });
-
-    return stats;
-  }, [purchaseOrders]);
-
-  const formatNumber = (num) =>
-    new Intl.NumberFormat().format(Math.round(num));
-
-  const formatDate = (dateString) =>
-    new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-
-  const getQuarterName = (quarter) => {
-    const names = { 1: "Q1", 2: "Q2", 3: "Q3", 4: "Q4" };
-    return names[quarter];
-  };
-
-  const getUrgencyColor = (dispatchDate) => {
-    const dispatch = new Date(dispatchDate);
-    const today = new Date();
-    const daysUntil = Math.ceil((dispatch - today) / (1000 * 60 * 60 * 24));
-
-    if (daysUntil < 7)
-      return "bg-red-50 border-red-200 text-red-800 shadow-md";
-    if (daysUntil < 30)
-      return "bg-yellow-50 border-yellow-200 text-yellow-800 shadow-md";
-    return "bg-green-50 border-green-200 text-green-800 shadow-md";
+    addPOData({ ...formData, id: Date.now() });
+    setPOData(getPOData());
+    setFormData({ poNumber: "", supplier: "", material: "", quantity: "", eta: "", status: "Pending" });
+    setShowForm(false);
   };
 
   return (
-    <div className="max-w-full mx-auto space-y-6">
+    <div className="max-w-full mx-auto space-y-6 fade-in">
       {/* Page Header */}
-      <div className="bg-white rounded-xl shadow-lg p-6 flex items-center justify-between flex-wrap gap-4 card-hover">
+      <div className="bg-white rounded-xl shadow-lg p-6 flex items-center justify-between flex-wrap gap-4 card-hover slide-up">
         <div className="flex items-center space-x-3">
-          <div className="bg-purple-100 p-3 rounded-lg shadow">
+          <div className="bg-purple-100 p-3 rounded-lg shadow pulse-slow">
             <Truck className="w-8 h-8 text-purple-600" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">
-              Purchase Order Tracking
-            </h1>
-            <p className="text-gray-600">
-              Monitor client orders, dispatch schedules and delivery planning
-            </p>
+            <h1 className="text-3xl font-bold text-gray-800">PO Tracking</h1>
+            <p className="text-gray-600">Track supplier purchase orders and their delivery status</p>
           </div>
         </div>
 
-        <button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="btn-primary flex items-center space-x-2"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Add New PO</span>
+        <button onClick={() => setShowForm(!showForm)} className="btn-primary flex items-center space-x-2">
+          <ClipboardList className="w-5 h-5" />
+          <span>Add PO</span>
         </button>
       </div>
 
-      {/* Quarterly Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {Object.entries(quarterStats).map(([quarter, stats]) => (
-          <div
-            key={quarter}
-            className="bg-white rounded-xl shadow-lg p-6 card-hover"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-gray-700">
-                {getQuarterName(parseInt(quarter))} 2024
-              </h3>
-              <Package className="w-4 h-4 text-gray-400" />
-            </div>
-            <div className="space-y-1">
-              <div className="text-2xl font-bold text-purple-600">
-                {stats.count}
-              </div>
-              <div className="text-sm text-gray-600">Orders</div>
-              <div className="text-sm font-medium text-gray-800">
-                {formatNumber(stats.volume)} kg
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
       {/* Add PO Form */}
-      {showAddForm && (
-        <div className="bg-white rounded-xl shadow-lg p-6 card-hover">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">
-            Add New Purchase Order
-          </h2>
-
-          <form
-            onSubmit={handleSubmit}
-            className="grid grid-cols-1 md:grid-cols-3 gap-4"
-          >
-            {[
-              ["Client Name", "clientName", "text"],
-              ["PO Number", "poNumber", "text"],
-              ["Products", "products", "text"],
-              ["Quantity (kg)", "quantity", "number"],
-              ["Dispatch Date", "dispatchDate", "date"],
-            ].map(([label, key, type]) => (
-              <div key={key}>
+      {showForm && (
+        <div className="bg-white rounded-xl shadow-lg p-6 card-hover slide-up">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Add New Purchase Order</h2>
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {["poNumber", "supplier", "material", "quantity", "eta"].map((field) => (
+              <div key={field}>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {label}
+                  {field === "poNumber" ? "PO Number" : field.charAt(0).toUpperCase() + field.slice(1)}
                 </label>
                 <input
-                  type={type}
-                  step={type === "number" ? "0.01" : undefined}
-                  value={poForm[key]}
-                  onChange={(e) =>
-                    setPoForm({ ...poForm, [key]: e.target.value })
-                  }
+                  type={field === "quantity" ? "number" : field === "eta" ? "date" : "text"}
+                  value={formData[field]}
+                  onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
                   className="form-input"
                   required
                 />
               </div>
             ))}
 
-            <div className="flex items-end">
-              <button
-                type="submit"
-                className="btn-primary flex items-center space-x-2"
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                className="form-input"
               >
-                <Save className="w-4 h-4" />
-                <span>Add PO</span>
+                <option value="Pending">Pending</option>
+                <option value="In Transit">In Transit</option>
+                <option value="Delivered">Delivered</option>
+              </select>
+            </div>
+
+            <div className="flex items-end">
+              <button type="submit" className="btn-primary flex items-center space-x-2">
+                <CheckCircle className="w-4 h-4" />
+                <span>Save PO</span>
               </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* Filters and Search */}
-      <div className="bg-white rounded-xl shadow-lg p-6 card-hover">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center space-x-2">
-            <Search className="w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search POs..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="form-input"
-            />
+      {/* PO Table */}
+      <div className="bg-white rounded-xl shadow-lg p-6 card-hover slide-up">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Purchase Orders</h2>
+        {poData.length === 0 ? (
+          <p className="text-gray-600">No purchase orders found. Add one to begin.</p>
+        ) : (
+          <div className="table-responsive">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-100">
+                  {["PO Number", "Supplier", "Material", "Quantity", "ETA", "Status"].map((h) => (
+                    <th key={h} className="px-4 py-3 text-sm font-semibold text-gray-700">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {poData.map((po, idx) => (
+                  <tr
+                    key={po.id}
+                    className="hover:bg-gray-50 border-b last:border-0 slide-up"
+                    style={{ animationDelay: `${idx * 0.05}s` }}
+                  >
+                    <td className="px-4 py-3 text-gray-800">{po.poNumber}</td>
+                    <td className="px-4 py-3 text-gray-800">{po.supplier}</td>
+                    <td className="px-4 py-3 text-gray-800">{po.material}</td>
+                    <td className="px-4 py-3 text-gray-800">{po.quantity}</td>
+                    <td className="px-4 py-3 text-gray-800">{po.eta}</td>
+                    <td className="px-4 py-3 text-gray-800">
+                      {po.status === "Delivered" && <CheckCircle className="w-4 h-4 text-green-600 inline mr-1" />}
+                      {po.status === "In Transit" && <Clock className="w-4 h-4 text-yellow-600 inline mr-1" />}
+                      {po.status}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-
-          <div className="flex items-center space-x-2">
-            <Filter className="w-4 h-4 text-gray-400" />
-            <select
-              value={filterQuarter}
-              onChange={(e) => setFilterQuarter(e.target.value)}
-              className="form-input"
-            >
-              <option value="all">All Quarters</option>
-              <option value="1">Q1</option>
-              <option value="2">Q2</option>
-              <option value="3">Q3</option>
-              <option value="4">Q4</option>
-            </select>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">Sort by:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="form-input"
-            >
-              <option value="dispatchDate">Dispatch Date</option>
-              <option value="quantity">Quantity</option>
-              <option value="client">Client Name</option>
-            </select>
-          </div>
-        </div>
+        )}
       </div>
-
-      {/* PO List */}
-      {filteredAndSortedPOs.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-lg p-8 text-center card-hover">
-          <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            No Purchase Orders Found
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Start by adding purchase orders to track client deliveries.
-          </p>
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="btn-primary inline-flex items-center space-x-2"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Add First PO</span>
-          </button>
-        </div>
-      ) : (
-        <div className="grid gap-6">
-          {filteredAndSortedPOs.map((po) => (
-            <div
-              key={po.id}
-              className={`bg-white rounded-xl shadow-lg border-2 overflow-hidden card-hover ${getUrgencyColor(
-                po.dispatchDate
-              )}`}
-            >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-purple-100 p-2 rounded-lg shadow">
-                      <User className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-800">
-                        {po.clientName}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        PO: {po.poNumber}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-purple-600">
-                      {formatNumber(po.quantity)} kg
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      {getQuarterName(po.dispatchQuarter)} {po.dispatchYear}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
-                      Products
-                    </div>
-                    <div className="font-medium text-gray-800">
-                      {po.products}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
-                      Dispatch Date
-                    </div>
-                    <div className="font-medium text-gray-800">
-                      {formatDate(po.dispatchDate)}
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      Week {po.dispatchWeek}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
-                      Quantity
-                    </div>
-                    <div className="font-medium text-gray-800">
-                      {formatNumber(po.quantity)} kg
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
-                      Timeline
-                    </div>
-                    <div className="font-medium text-gray-800">
-                      Month {po.dispatchMonth} |{" "}
-                      {getQuarterName(po.dispatchQuarter)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
