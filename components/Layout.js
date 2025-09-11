@@ -23,12 +23,12 @@ const Layout = ({ children }) => {
                 <img
                   src="/Fairoils.svg"
                   alt="Fairoils Logo"
-                  className="w-16 h-16 object-contain"
+                  className="w-16 h-16 object-contain shrink-0"
                 />
                 <img
                   src="/Kutoka.svg"
                   alt="Kutoka Logo"
-                  className="w-16 h-16 object-contain"
+                  className="w-16 h-16 object-contain shrink-0"
                 />
               </div>
 
