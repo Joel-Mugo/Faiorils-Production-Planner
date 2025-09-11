@@ -29,7 +29,7 @@ export default function ProductionDashboard() {
 
   const currentWeek = getCurrentWeek();
 
-  // Group data by factory + week
+  // Group data
   const groupedData = useMemo(() => {
     const grouped = {};
     productionData.forEach((entry) => {
@@ -114,9 +114,9 @@ export default function ProductionDashboard() {
 
   if (productionData.length === 0) {
     return (
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto fade-in">
         <div className="bg-white rounded-xl shadow-lg p-12 text-center card-hover">
-          <Factory className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <Factory className="w-16 h-16 text-gray-400 mx-auto mb-4 pulse-slow" />
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
             No Production Data Available
           </h2>
@@ -135,11 +135,11 @@ export default function ProductionDashboard() {
   }
 
   return (
-    <div className="max-w-full mx-auto space-y-6">
+    <div className="max-w-full mx-auto space-y-6 fade-in">
       {/* Page Header */}
-      <div className="bg-white rounded-xl shadow-lg p-6 flex items-center justify-between flex-wrap gap-4 card-hover">
+      <div className="bg-white rounded-xl shadow-lg p-6 flex items-center justify-between flex-wrap gap-4 card-hover slide-up">
         <div className="flex items-center space-x-3">
-          <div className="bg-blue-100 p-3 rounded-lg shadow">
+          <div className="bg-blue-100 p-3 rounded-lg shadow pulse-slow">
             <BarChart3 className="w-8 h-8 text-blue-600" />
           </div>
           <div>
@@ -198,10 +198,11 @@ export default function ProductionDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {Object.entries(weeklyTotals)
           .slice(0, 4)
-          .map(([week, data]) => (
+          .map(([week, data], idx) => (
             <div
               key={week}
-              className="bg-white rounded-lg shadow-md p-6 text-center card-hover"
+              className="bg-white rounded-lg shadow-md p-6 text-center card-hover fade-in"
+              style={{ animationDelay: `${idx * 0.1}s` }}
             >
               <h3 className="font-semibold text-gray-700 mb-2">
                 Week {week}
@@ -222,10 +223,11 @@ export default function ProductionDashboard() {
       {/* Grid View */}
       {viewMode === "grid" && (
         <div className="space-y-6">
-          {filteredData.map((factory) => (
+          {filteredData.map((factory, idx) => (
             <div
               key={factory.factoryId}
-              className="bg-white rounded-xl shadow-lg overflow-hidden card-hover"
+              className="bg-white rounded-xl shadow-lg overflow-hidden card-hover slide-up"
+              style={{ animationDelay: `${idx * 0.1}s` }}
             >
               <div className="bg-gradient-to-r from-blue-600 to-green-600 text-white p-4">
                 <div className="flex items-center justify-between">
@@ -264,14 +266,15 @@ export default function ProductionDashboard() {
               </div>
 
               <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-                {factory.weeks.map((week) => {
+                {factory.weeks.map((week, wIdx) => {
                   const efficiency = calculateEfficiency(factory, week);
                   return (
                     <div
                       key={week.week}
-                      className={`border-2 rounded-lg p-4 card-hover ${getStatusColor(
+                      className={`border-2 rounded-lg p-4 card-hover fade-in ${getStatusColor(
                         efficiency
                       )}`}
+                      style={{ animationDelay: `${wIdx * 0.1}s` }}
                     >
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="font-semibold text-gray-700">
@@ -310,7 +313,7 @@ export default function ProductionDashboard() {
 
       {/* Timeline View */}
       {viewMode === "timeline" && (
-        <div className="bg-white rounded-xl shadow-lg p-6 card-hover">
+        <div className="bg-white rounded-xl shadow-lg p-6 card-hover slide-up">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
@@ -334,10 +337,11 @@ export default function ProductionDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {filteredData.map((factory) => (
+                {filteredData.map((factory, fIdx) => (
                   <tr
                     key={factory.factoryId}
-                    className="hover:bg-gray-50 border-b last:border-0"
+                    className="hover:bg-gray-50 border-b last:border-0 slide-up"
+                    style={{ animationDelay: `${fIdx * 0.1}s` }}
                   >
                     <td className="py-4 px-4 font-medium text-gray-800">
                       {factory.factoryName}
@@ -349,7 +353,7 @@ export default function ProductionDashboard() {
                           key={week.week}
                           className="py-4 px-4 text-center text-gray-700"
                         >
-                          <div className="inline-block p-2 rounded-lg border card-hover">
+                          <div className="inline-block p-2 rounded-lg border card-hover fade-in">
                             <div className="text-sm">
                               {formatNumber(week.totalRawMaterial)} kg
                             </div>
@@ -382,16 +386,16 @@ export default function ProductionDashboard() {
 
       {/* Footer Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow-md p-6 text-center card-hover">
-          <Factory className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+        <div className="bg-white rounded-lg shadow-md p-6 text-center card-hover fade-in">
+          <Factory className="w-8 h-8 text-blue-500 mx-auto mb-2 pulse-slow" />
           <div className="text-2xl font-bold text-gray-800">
             {filteredData.length}
           </div>
           <div className="text-sm text-gray-600">Active Factories</div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6 text-center card-hover">
-          <TrendingUp className="w-8 h-8 text-green-500 mx-auto mb-2" />
+        <div className="bg-white rounded-lg shadow-md p-6 text-center card-hover fade-in">
+          <TrendingUp className="w-8 h-8 text-green-500 mx-auto mb-2 pulse-slow" />
           <div className="text-2xl font-bold text-gray-800">
             {formatNumber(
               Object.values(weeklyTotals).reduce(
@@ -403,8 +407,8 @@ export default function ProductionDashboard() {
           <div className="text-sm text-gray-600">Total Raw Material (kg)</div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6 text-center card-hover">
-          <Droplets className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+        <div className="bg-white rounded-lg shadow-md p-6 text-center card-hover fade-in">
+          <Droplets className="w-8 h-8 text-blue-500 mx-auto mb-2 pulse-slow" />
           <div className="text-2xl font-bold text-gray-800">
             {formatNumber(
               Object.values(weeklyTotals).reduce(
@@ -418,8 +422,8 @@ export default function ProductionDashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6 text-center card-hover">
-          <Zap className="w-8 h-8 text-green-500 mx-auto mb-2" />
+        <div className="bg-white rounded-lg shadow-md p-6 text-center card-hover fade-in">
+          <Zap className="w-8 h-8 text-green-500 mx-auto mb-2 pulse-slow" />
           <div className="text-2xl font-bold text-gray-800">
             {Object.values(weeklyTotals).length > 0
               ? (
